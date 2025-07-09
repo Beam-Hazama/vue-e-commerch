@@ -1,14 +1,18 @@
 import { defineStore } from 'pinia'
 
+import { collection, getDocs } from "firebase/firestore"; 
+import { db } from '@/firebase.js'
+
 export const useUserProductStore = defineStore('product', {
   state: () => ({
     list: [ ],
   }),
   actions:{
-    loadProduct(){
-      const porducts = localStorage.getItem('admin-product')
-      if(porducts){
-        this.list = JSON.parse(porducts)
+    async loadProduct(){
+      const productSnapshot = await getDocs(collection(db,"product"))
+      const products = productSnapshot.docs.map(doc =>doc.data())
+      if(products.length>0){
+        this.list = products
         this.loaded = true
       }
     },
