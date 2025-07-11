@@ -9,7 +9,7 @@ export const useUserProductStore = defineStore('product', {
   }),
   actions:{
     async loadProduct(){
-      const productSnapshot = await getDocs(collection(db,"product"))
+      const productSnapshot = await getDocs(collection(db,"products"))
       const products = productSnapshot.docs.map(doc =>doc.data())
       if(products.length>0){
         this.list = products

@@ -20,6 +20,8 @@ import AdminProductUpdate from '@/views/admin/product/UpdateView.vue'
 import AdminUserList from '@/views/admin/user/ListView.vue'
 import AdminUserUpdate from '@/views/admin/user/UpdateView.vue'
 
+import { uesAccountStore } from '@/stores/account'
+
 
 
 const router = createRouter({
@@ -59,7 +61,7 @@ const router = createRouter({
     //admin
     {
       path: '/admin/login',
-      name: 'admin-login',
+      name: 'login',
       component: AdminLogin,
     },
     {
@@ -103,6 +105,18 @@ const router = createRouter({
       component: AdminUserUpdate,
     },
   ],
+})
+
+router.beforeEach(async(to,from,next)=>{
+  const accountStore = uesAccountStore()
+  await accountStore.checkAuth()
+  if (to.name.includes('admin') && !accountStore.isAdmin){
+    next({name:'home'})
+  } else if(to.name === 'login' && accountStore.isAdmin){
+    next({name:'admin-dashboard'})
+  } else {
+  next()
+  }
 })
 
 export default router

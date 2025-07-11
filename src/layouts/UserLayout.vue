@@ -3,29 +3,38 @@ import { ref ,onMounted} from 'vue';
 import { RouterLink,useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/user/cart';
 
+import { uesAccountStore } from '@/stores/account';
+
+
 const router = useRouter()
+
+const accountStore = uesAccountStore()
 const cartStore = useCartStore()
-const isLoggedIn = ref(false)
 
 const searchText = ref('')
 
-onMounted (()=>{
-  if(localStorage.getItem('isLoggedIn')){
-    isLoggedIn.value=true
-  }
+onMounted (async()=>{
+  await accountStore.checkAuth()
 })
 
-const login =()=>{
-  isLoggedIn.value = true
-  localStorage.setItem('isLoggedIn',true)
+const login = async () => {
+  try{
+    await accountStore.signInWithGoodle()
+  }catch(error){
+    console.log('error',error)
+  }
 }
-const logout = ()=>{
-  isLoggedIn.value = false
-  localStorage.removeItem('isLoggedIn')
-  localStorage.removeItem('cart-data')
-  localStorage.removeItem('order-data')
-  window.location.reload()
+
+const logout = async () => {
+  try{
+    await accountStore.logout()
+    window.location.reload()
+  }catch(error){
+    console.log('error',error)
+  }
+  
 }
+
 const handleSearch = (event) =>{
   if(event.key === 'Enter'){
   router.push({
@@ -68,7 +77,7 @@ const handleSearch = (event) =>{
             </div>
           </div>
         </div>
-        <button @click="login()" v-if="!isLoggedIn" class="btn btn-ghost">Login</button>
+        <button @click="login()" v-if="!accountStore.isLoggedIn" class="btn btn-ghost">Login</button>
         <div v-else class="dropdown dropdown-end">
           <label tabindex="0" class="btn btn-ghost btn-circle avatar">
             <div class="w-10 rounded-full">
