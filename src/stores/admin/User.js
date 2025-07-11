@@ -1,29 +1,30 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
+
+import { collection,doc,getDocs,getDoc,setDoc } from 'firebase/firestore';
+
+import { db } from '@/firebase';
+
 
 export const useAdminUserStore = defineStore("admin-user", {
   state: () => ({
-    list: [
-      {
-        fullname: "beam",
-        role: "admin",
-        status: "active",
-        updatedAt: (new Date).toISOString(),
-      },
-    ],
+    list: [],
   }),
   actions: {
-    getUser(index) {
+    async loadUser (){
+      const userCol = collection(db,'users')
+      const userSnapshot = await getDocs(userCol)
+      console.log(userSnapshot.docs)
+    },
+    async getUser(index) {
       return this.list[index];
     },
-    updateUser(index, userData) {
+    async updateUser(index, userData) {
       const fields = ["fullname", "role", "status"];
       for (let field of fields) {
         this.list[index][field] = userData[field];
       }
       this.list[index].updatedAt = (new Date).toISOString()
     },
-    removeUser(index){
-      this.list.splice(index,1)
-    }
+    
   },
 });

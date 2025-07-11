@@ -5,7 +5,9 @@ import {
     signOut,
     onAuthStateChanged,
     signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { auth,db } from '@/firebase';
+
+import { doc,getDoc,setDoc } from 'firebase/firestore';
 
 const provider = new GoogleAuthProvider()
 
@@ -13,15 +15,31 @@ export const uesAccountStore = defineStore('account',{
     state:()=>({
         isLoggedIn:false,
         isAdmin:false,
-        user:{}
+        user:{},
+        profile:{}
     }),
     actions:{
         async checkAuth () {
             return new Promise((resolve)=>{
-                onAuthStateChanged(auth,(user)=>{
+                onAuthStateChanged(auth,async(user)=>{
                     if(user){
                         this.user = user
-                        if (user.email === 'admin@gmail.com'){
+                        const docRef = doc(db,'users',user.uid)
+                        const docSnap = await getDoc(docRef)
+                        if (docSnap.exists()){
+                            this.profile = docSnap.data()
+                        }else{
+                            const newUser = {
+                                name:user.displayName,
+                                role:'member',
+                                status:'active',
+                                updatedAt: new Date()
+                            }
+                            await setDoc(docRef,newUser)
+                            this.profile = newUser
+                        }
+                        console.log('profile',this.profile)
+                        if (this.profile.role === 'admin'){
                             this.isAdmin = true
                         }
                         this.isLoggedIn = true
